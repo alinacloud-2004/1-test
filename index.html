@@ -3,39 +3,403 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Генератор мудрости инженера</title>
+  <title>Калькулятор расхода топлива на 100 км</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-    .quote-box { max-width: 520px; background: #1e293b; padding: 36px; border-radius: 24px; border: 1px solid #334155; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-    .badge { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #38bdf8; letter-spacing: 1px; margin-bottom: 16px; }
-    .quote-text { font-size: 18px; font-style: italic; line-height: 1.6; margin: 20px 0; min-height: 70px; color: #e2e8f0; }
-    .author { font-size: 13px; color: #94a3b8; margin-bottom: 24px; font-weight: 500; }
-    button { background: #38bdf8; color: #0f172a; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.1s, background 0.2s; }
-    button:hover { background: #0284c7; color: white; }
-    button:active { transform: scale(0.98); }
+    /* ----- Глобальные стили ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background: #f4f7fc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* ----- Карточка по центру ----- */
+    .card {
+      background: #ffffff;
+      max-width: 560px;
+      width: 100%;
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.1), 0 8px 16px -6px rgba(0, 0, 0, 0.02);
+      padding: 2rem 2rem 2rem;
+      transition: all 0.2s ease;
+    }
+
+    /* ----- Семантические блоки ----- */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #0b1b2b;
+      margin-bottom: 0.4rem;
+    }
+
+    header p {
+      color: #5e6f88;
+      font-size: 1rem;
+      font-weight: 400;
+      border-bottom: 1px solid #e9eef4;
+      padding-bottom: 1rem;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ----- Поля ввода ----- */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-group label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e2f44;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .input-group label span {
+      color: #7c8ca0;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 1.5px solid #dde4ed;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      background: #f9fbfe;
+      transition: 0.2s;
+      outline: none;
+      color: #0b1b2b;
+      font-weight: 500;
+    }
+
+    .input-group input:focus {
+      border-color: #3a7bd5;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(58, 123, 213, 0.1);
+    }
+
+    .input-group input::placeholder {
+      color: #a7b7cc;
+      font-weight: 400;
+      font-size: 0.95rem;
+    }
+
+    /* ----- Кнопка ----- */
+    .calculate-btn {
+      background: #1e3b5c;
+      color: white;
+      border: none;
+      padding: 1rem 1.5rem;
+      border-radius: 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 8px 18px -6px rgba(22, 50, 84, 0.25);
+      margin-top: 0.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .calculate-btn:hover {
+      background: #11304f;
+    }
+
+    .calculate-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 4px 10px -4px rgba(22, 50, 84, 0.3);
+    }
+
+    /* ----- Блок результата и ошибок ----- */
+    .result-area {
+      background: #f0f5fa;
+      border-radius: 1.25rem;
+      padding: 1.3rem 1.5rem;
+      min-height: 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: 0.2s;
+      border: 1px solid #e2eaf2;
+      word-break: break-word;
+    }
+
+    .result-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-weight: 600;
+      color: #53718f;
+      margin-bottom: 0.25rem;
+    }
+
+    .result-value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0c2b44;
+      line-height: 1.3;
+    }
+
+    .result-value small {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #4c6280;
+      margin-left: 0.25rem;
+    }
+
+    .error-message {
+      color: #c2412d;
+      background: #fff3f0;
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-left: 5px solid #c2412d;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .error-message::before {
+      content: "⚠️";
+      font-size: 1.2rem;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: #7f8f9f;
+      text-align: center;
+      margin-top: 0.25rem;
+    }
+
+    /* ----- Подвал ----- */
+    footer {
+      margin-top: 1.8rem;
+      text-align: center;
+      color: #9aabbb;
+      font-size: 0.8rem;
+      border-top: 1px solid #e2eaf2;
+      padding-top: 1.2rem;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* ----- Адаптивность для маленьких экранов ----- */
+    @media (max-width: 480px) {
+      .card {
+        padding: 1.5rem 1.2rem;
+        border-radius: 1.75rem;
+      }
+
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      .input-group input {
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+      }
+
+      .calculate-btn {
+        font-size: 1rem;
+        padding: 0.9rem 1rem;
+      }
+
+      .result-value {
+        font-size: 1.6rem;
+      }
+
+      .result-area {
+        padding: 1rem 1.2rem;
+      }
+    }
+
+    /* Убираем спиннеры у number-инпутов (для единообразия) */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
   </style>
 </head>
 <body>
-  <div class="quote-box">
-    <div class="badge">💡 Мысль дня разработчика</div>
-    <div class="quote-text" id="quote-display">«Работает — не трогай» — девиз плохого инженера. Хороший инженер делает так, чтобы код понимали другие.</div>
-    <div class="author" id="author-display">— Мартин Фаулер</div>
-    <button onclick="getRandomQuote()">Получить новую мысль</button>
+  <div class="card">
+    <header>
+      <h1>Расход топлива</h1>
+      <p>на 100 км</p>
+    </header>
+
+    <main>
+      <!-- Поле: пройденное расстояние -->
+      <div class="input-group">
+        <label for="distance">Пройденное расстояние <span>км</span></label>
+        <input type="number" id="distance" placeholder="Например, 450" min="0.01" step="any" autocomplete="off">
+      </div>
+
+      <!-- Поле: израсходованное топливо -->
+      <div class="input-group">
+        <label for="fuel">Израсходованное топливо <span>л</span></label>
+        <input type="number" id="fuel" placeholder="Например, 32" min="0.01" step="any" autocomplete="off">
+      </div>
+
+      <!-- Кнопка расчёта -->
+      <button class="calculate-btn" id="calcBtn">
+        <span>Рассчитать</span>
+        <span style="font-size: 1.2rem;">→</span>
+      </button>
+
+      <!-- Блок для вывода результата или ошибки -->
+      <div id="resultContainer" class="result-area">
+        <div class="result-label">Результат</div>
+        <div class="result-value" id="resultValue">—</div>
+      </div>
+      <div class="hint">Введите положительные числа, чтобы увидеть расход</div>
+    </main>
+
+    <footer>
+      <span>Калькулятор расхода топлива · л/100 км</span>
+    </footer>
   </div>
 
   <script>
-    const quotes = [
-      { text: "«Всегда пишите код так, будто сопровождать его будет агрессивный маньяк, знающий ваш адрес».", author: "Джон Вудс" },
-      { text: "«В программировании есть две сложные вещи: инвалидация кэша и придумывание названий».", author: "Мартин Фаулер" },
-      { text: "«Простота — необходимое условие надежности».", author: "Эдсгер Дейкстра" },
-      { text: "«Измерять продуктивность программиста подсчетом строк кода — это как оценивать постройку самолета по его весу».", author: "Билл Гейтс" }
-    ];
+    (function() {
+      'use strict';
 
-    function getRandomQuote() {
-      const index = Math.floor(Math.random() * quotes.length);
-      document.getElementById('quote-display').innerText = quotes[index].text;
-      document.getElementById('author-display').innerText = "— " + quotes[index].author;
-    }
+      // Получаем элементы DOM
+      const distanceInput = document.getElementById('distance');
+      const fuelInput = document.getElementById('fuel');
+      const calcBtn = document.getElementById('calcBtn');
+      const resultContainer = document.getElementById('resultContainer');
+
+      // Функция для отображения ошибки в блоке результата
+      function showError(message) {
+        resultContainer.innerHTML = `<div class="error-message">${message}</div>`;
+      }
+
+      // Функция для отображения успешного результата
+      function showResult(consumption) {
+        // Округляем до двух знаков, но красиво: убираем лишние нули
+        const rounded = Math.round(consumption * 100) / 100;
+        // Форматируем число с разделителем тысяч для целой части (опционально)
+        const formatted = rounded.toLocaleString('ru-RU', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+        resultContainer.innerHTML = `
+          <div class="result-label">Расход топлива</div>
+          <div class="result-value">${formatted} <small>л/100 км</small></div>
+        `;
+      }
+
+      // Основная функция валидации и расчёта
+      function calculateFuelConsumption() {
+        // Считываем значения, обрезаем пробелы
+        const distanceRaw = distanceInput.value.trim();
+        const fuelRaw = fuelInput.value.trim();
+
+        // --- Валидация: пустые поля ---
+        if (distanceRaw === '') {
+          showError('Введите пройденное расстояние.');
+          return;
+        }
+        if (fuelRaw === '') {
+          showError('Введите израсходованное топливо.');
+          return;
+        }
+
+        // Преобразуем в числа
+        const distance = Number(distanceRaw);
+        const fuel = Number(fuelRaw);
+
+        // --- Валидация: некорректные числа (NaN, Infinity) ---
+        if (!isFinite(distance) || isNaN(distance)) {
+          showError('Расстояние должно быть числом.');
+          return;
+        }
+        if (!isFinite(fuel) || isNaN(fuel)) {
+          showError('Топливо должно быть числом.');
+          return;
+        }
+
+        // --- Валидация: отрицательные или нулевые значения ---
+        if (distance <= 0) {
+          showError('Расстояние должно быть больше нуля.');
+          return;
+        }
+        if (fuel <= 0) {
+          showError('Количество топлива должно быть больше нуля.');
+          return;
+        }
+
+        // --- Расчёт: литры на 100 км = (топливо / расстояние) * 100 ---
+        const consumption = (fuel / distance) * 100;
+
+        // --- Отображение результата ---
+        showResult(consumption);
+      }
+
+      // Навешиваем обработчик на кнопку
+      calcBtn.addEventListener('click', calculateFuelConsumption);
+
+      // Дополнительно: обработка нажатия Enter в полях ввода
+      distanceInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          calculateFuelConsumption();
+        }
+      });
+
+      fuelInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          calculateFuelConsumption();
+        }
+      });
+
+      // Очищаем блок результата при изменении полей, чтобы не показывать старый результат
+      // Но не сбрасываем ошибку сразу — только при новом расчёте. Пусть остаётся.
+      // Можно добавить лёгкий сброс: при фокусе на поле убираем ошибку? Нет, оставим как есть.
+      // Но для удобства: если пользователь начал вводить заново, старый результат/ошибка не мешает.
+      // Можно очищать только если поле пустое? Не будем усложнять.
+
+      // Инициализация: при загрузке показываем подсказку в блоке результата (уже есть в HTML "—")
+      // Но на всякий случай, если нужно очистить после ошибки и ввода — ничего не делаем.
+      // Хорошая практика: при вводе в любое поле сбрасывать ошибку? Нет, пусть остаётся до нажатия кнопки.
+      // Так пользователь видит актуальную ошибку, пока не исправит.
+    })();
   </script>
 </body>
 </html>
